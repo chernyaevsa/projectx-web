@@ -56,6 +56,45 @@ def init_routes(app):
         students = Student.query.all()
         return render_template('students.html', current="students", students=students)
 
+    @app.route('/student/add', methods=["GET", "POST"])
+    def student_add():
+        if request.method == "GET":
+            return render_template('student/add.html', current="students")
+        if request.method == "POST":
+            student = Student()
+            student.first_name = request.form["first-name"]
+            student.last_name = request.form["last-name"]
+            student.patronymic = request.form["patronymic"]
+            student.group = request.form["group"]
+            db.session.add(student)
+            db.session.commit()
+            return redirect("/students")
+
+    @app.route('/student/edit/<id>', methods=["GET", "POST"])
+    def student_edit(id):
+        if request.method == "GET":
+            student = db.get_or_404(Student, id)
+            return render_template('student/edit.html', current="students", student=student)
+        if request.method == "POST":
+            student = db.get_or_404(Student, request.form["id"])
+            student.first_name = request.form["first-name"]
+            student.last_name = request.form["last-name"]
+            student.patronymic = request.form["patronymic"]
+            student.group = request.form["group"]
+            db.session.commit()
+            return redirect("/students")
+
+    @app.route('/student/del/<id>', methods=["GET", "POST"])
+    def student_del(id):
+        if request.method == "GET":
+            student = db.get_or_404(Student, id)
+            return render_template('student/del.html', current="students", student=student)
+        if request.method == "POST":
+            student = db.get_or_404(Student, request.form["id"])
+            db.session.delete(student)
+            db.session.commit()
+            return redirect("/students")
+
     @app.route('/events')
     def events():
         events = Event.query.all()
