@@ -12,6 +12,18 @@ def init_routes(app):
         users = User.query.all()
         return render_template('users.html', current="users", users=users)
 
+    @app.route('/user/add', methods=["GET", "POST"])
+    def user_add():
+        if request.method == "GET":
+            return render_template('user/add.html', current="users")
+        if request.method == "POST":
+            user = User()
+            user.username = request.form["username"]
+            user.password = request.form["password"]
+            db.session.add(user)
+            db.session.commit()
+            return redirect("/users")
+
     @app.route('/students')
     def students():
         students = Student.query.all()
