@@ -24,6 +24,18 @@ def init_routes(app):
             db.session.commit()
             return redirect("/users")
 
+    @app.route('/user/edit/<id>', methods=["GET", "POST"])
+    def user_edit(id):
+        if request.method == "GET":
+            user = db.get_or_404(User, id)
+            return render_template('user/edit.html', current="users", user=user)
+        if request.method == "POST":
+            user = db.get_or_404(User, request.form["id"])
+            user.username = request.form["username"]
+            user.password = request.form["password"]
+            db.session.commit()
+            return redirect("/users")
+
     @app.route('/students')
     def students():
         students = Student.query.all()
