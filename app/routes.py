@@ -1,6 +1,7 @@
-from flask import render_template, request, redirect, url_for, jsonify
+from flask import render_template, request, redirect, url_for, jsonify, flash
 from . import db
 from .models import User, Student, Event
+from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 
 def init_routes(app):
     @app.errorhandler(404)
@@ -12,11 +13,13 @@ def init_routes(app):
         return render_template('index.html', current="index")
     
     @app.route('/users')
+    @login_required
     def users():
         users = User.query.all()
         return render_template('users.html', current="users", users=users)
 
     @app.route('/user/add', methods=["GET", "POST"])
+    @login_required
     def user_add():
         if request.method == "GET":
             return render_template('user/add.html', current="users")
@@ -29,6 +32,7 @@ def init_routes(app):
             return redirect("/users")
 
     @app.route('/user/edit/<id>', methods=["GET", "POST"])
+    @login_required
     def user_edit(id):
         if request.method == "GET":
             user = db.get_or_404(User, id)
@@ -41,6 +45,7 @@ def init_routes(app):
             return redirect("/users")
 
     @app.route('/user/del/<id>', methods=["GET", "POST"])
+    @login_required
     def user_del(id):
         if request.method == "GET":
             user = db.get_or_404(User, id)
@@ -52,11 +57,13 @@ def init_routes(app):
             return redirect("/users")
 
     @app.route('/students')
+    @login_required
     def students():
         students = Student.query.all()
         return render_template('students.html', current="students", students=students)
 
     @app.route('/student/add', methods=["GET", "POST"])
+    @login_required
     def student_add():
         if request.method == "GET":
             return render_template('student/add.html', current="students")
@@ -71,6 +78,7 @@ def init_routes(app):
             return redirect("/students")
 
     @app.route('/student/edit/<id>', methods=["GET", "POST"])
+    @login_required
     def student_edit(id):
         if request.method == "GET":
             student = db.get_or_404(Student, id)
@@ -85,6 +93,7 @@ def init_routes(app):
             return redirect("/students")
 
     @app.route('/student/del/<id>', methods=["GET", "POST"])
+    @login_required
     def student_del(id):
         if request.method == "GET":
             student = db.get_or_404(Student, id)
@@ -96,6 +105,34 @@ def init_routes(app):
             return redirect("/students")
 
     @app.route('/events')
+    @login_required
     def events():
         events = Event.query.all()
+        
         return render_template('events.html', current="events", events=events)
+
+    @app.route('/login', methods=['GET', 'POST'])
+    def login():
+        if current_user.is_authenticated:
+            return redirect(url_for('home'))
+    
+        if request.method == 'POST':
+            username = request.form.get('username')
+            password = request.form.get('password')
+        
+            user = User.query.filter_by(username=username, password=password).first()
+            
+            if user:
+                login_user(user, remember=True)
+                next_page = request.args.get('next')
+                return redirect(next_page) if next_page else redirect("/")
+            else:
+                flash('Неверное имя пользователя или пароль', 'danger')
+    
+        return render_template('login.html')
+
+    @app.route('/logout')
+    @login_required
+    def logout():
+        logout_user()
+        return redirect("/")
