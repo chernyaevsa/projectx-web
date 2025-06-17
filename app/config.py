@@ -14,6 +14,10 @@ class Config:
 
     IMGS = os.getenv('IMGS', 'imgs')
     
+    #Секретный ключ для авторизации
+    SECRET_KEY = os.urandom(24)
+    REMEMBER_COOKIE_SECURE = True
+    
     # Формируем URI для подключения
     SQLALCHEMY_DATABASE_URI = (
         f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
