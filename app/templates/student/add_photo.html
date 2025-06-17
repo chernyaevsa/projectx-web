@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block content %}
+<form method="POST" style="margin-top: 4.5rem;">
+  <h2>Добавление фото студента</h2>
+  <input type="hidden" id="id-input" name="id" value="{{student.id}}">
+  <div class="form-group">
+    <label for="photo-input">Фото</label>
+    <input type="text" class="form-control" id="photo-input" name="photo">
+  </div>
+  <button type="submit" class="btn btn-success mt-2">Добавить</button>
+</form>
+{% endblock %}

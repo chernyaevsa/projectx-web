@@ -1,4 +1,5 @@
-from flask import render_template, request, redirect, url_for, jsonify
+from flask import render_template, request, redirect, url_for, jsonify, send_file, make_response
+import os
 from . import db
 from .models import User, Student, Event
 
@@ -94,6 +95,37 @@ def init_routes(app):
             db.session.delete(student)
             db.session.commit()
             return redirect("/students")
+    
+    @app.route('/student/photo/<id>', methods=["GET", "POST"])
+    def student_photo(id):
+        if request.method == "GET":
+            if os.path.isfile(os.path.join(app.config['IMGS'], f"{id}.jpg")):
+                return send_file(os.path.abspath(os.path.join(app.config['IMGS'], f"{id}.jpg")), as_attachment=True)
+            else:
+                return make_response(f"File '{id}' not found.", 404)
+        if request.method == "POST":
+            # Проверяем, есть ли файл в запросе
+            if 'photo' not in request.files:
+                return redirect("/users")
+        
+            file = request.files['photo']
+            print(file)
+        
+            # Если пользователь не выбрал файл
+            if file.filename == '':
+                return redirect("/users")
+            
+            def allowed_file(filename):
+                return '.' in filename and filename.rsplit('.', 1)[1].lower() in {"jpg"}
+
+            # Если файл разрешен и корректен
+            if file and allowed_file(file.filename):
+                if not os.path.exists(app.config['IMGS']):
+                    os.makedirs(app.config['IMGS'])
+                file.save(os.path.abspath(os.path.join(app.config['IMGS'], f"{id}.jpg")))
+                return redirect("/users")
+    
+        return redirect("/users")
 
     @app.route('/events')
     def events():
