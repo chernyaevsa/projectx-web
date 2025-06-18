@@ -145,6 +145,16 @@ def init_routes(app):
                 return send_file(os.path.abspath(os.path.join(app.config['IMGS'], f"{id}.jpg")), as_attachment=True)
             else:
                 return make_response(f"File '{id}' not found.", 404)
+    
+    @app.route('/students/json')
+    def students_all():
+        students = Student.query.all()
+        result = []
+        for student in students:
+            student_dict = student.__dict__
+            student_dict.pop('_sa_instance_state', None)  # Удаляем служебное поле SQLAlchemy
+            result.append(student_dict)
+        return jsonify(result)
 
     @app.route('/events')
     @login_required
