@@ -105,36 +105,46 @@ def init_routes(app):
             db.session.commit()
             return redirect("/students")
     
-    @app.route('/student/photo/<id>', methods=["GET", "POST"])
-    def student_photo(id):
+    @app.route('/student/photo-edit/<id>', methods=["GET", "POST"])
+    def student_photo_edit(id):
         if request.method == "GET":
-            if os.path.isfile(os.path.join(app.config['IMGS'], f"{id}.jpg")):
-                return send_file(os.path.abspath(os.path.join(app.config['IMGS'], f"{id}.jpg")), as_attachment=True)
-            else:
-                return make_response(f"File '{id}' not found.", 404)
+            student = db.get_or_404(Student, id)
+            return render_template('student/add_photo.html', current="students", student=student)
         if request.method == "POST":
+            print("Hi")
             # Проверяем, есть ли файл в запросе
             if 'photo' not in request.files:
-                return redirect("/users")
+                flash('No file part')
+                return redirect("/students")
         
             file = request.files['photo']
             print(file)
         
             # Если пользователь не выбрал файл
             if file.filename == '':
-                return redirect("/users")
+                flash('No selected file')
+                return redirect("/students")
             
             def allowed_file(filename):
                 return '.' in filename and filename.rsplit('.', 1)[1].lower() in {"jpg"}
-
+            
             # Если файл разрешен и корректен
             if file and allowed_file(file.filename):
                 if not os.path.exists(app.config['IMGS']):
                     os.makedirs(app.config['IMGS'])
                 file.save(os.path.abspath(os.path.join(app.config['IMGS'], f"{id}.jpg")))
-                return redirect("/users")
+                return redirect("/students")
     
-        return redirect("/users")
+        return redirect("/students")
+
+    @app.route('/student/photo/<id>', methods=["GET", "POST"])
+    def student_photo(id):
+        if request.method == "GET":
+            student = db.get_or_404(Student, id)
+            if os.path.isfile(os.path.join(app.config['IMGS'], f"{id}.jpg")):
+                return send_file(os.path.abspath(os.path.join(app.config['IMGS'], f"{id}.jpg")), as_attachment=True)
+            else:
+                return make_response(f"File '{id}' not found.", 404)
 
     @app.route('/events')
     @login_required
