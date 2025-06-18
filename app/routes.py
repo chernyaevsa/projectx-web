@@ -111,14 +111,12 @@ def init_routes(app):
             student = db.get_or_404(Student, id)
             return render_template('student/add_photo.html', current="students", student=student)
         if request.method == "POST":
-            print("Hi")
             # Проверяем, есть ли файл в запросе
             if 'photo' not in request.files:
                 flash('No file part')
                 return redirect("/students")
         
             file = request.files['photo']
-            print(file)
         
             # Если пользователь не выбрал файл
             if file.filename == '':
