@@ -158,8 +158,17 @@ def init_routes(app):
     @login_required
     def events():
         events = Event.query.all()
-        
         return render_template('events.html', current="events", events=events)
+
+    @app.route('/event/add', methods=["GET", "POST"])
+    def event_add():
+        if request.method == "POST":
+            event = Event()
+            event.name = request.json["name"]
+            event.description = request.json["description"]
+            db.session.add(event)
+            db.session.commit()
+            return make_response("", 200)
 
     @app.route('/login', methods=['GET', 'POST'])
     def login():
